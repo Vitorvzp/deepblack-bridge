@@ -1,16 +1,11 @@
 import http from 'node:http';
 import fs from 'node:fs';
-import path from 'node:path';
-import { pathToFileURL, fileURLToPath } from 'node:url';
+import { pathToFileURL } from 'node:url';
 import { DeepSeekWebClient } from './deepseek.js';
 import { formatMessagesToPrompt, computeToolsHash } from './agent_prompt.js';
 import { enqueueDeepHatObservation, consumeDeepHatAdvice, consultDeepHatDirect, isDeepHatAlive } from './deephat.js';
 import { upsertAccount } from '../cli/accounts.js';
 import { emitActivity } from './activity.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const ROOT_DIR = path.resolve(__dirname, '..');
 
 const PORT = parseInt(process.env.PORT || '5050', 10);
 const HOST = process.env.HOST || '0.0.0.0';

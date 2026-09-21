@@ -1,15 +1,11 @@
 // language: JavaScript, file: cli/sessions.js, target: Node.js (ESM), Windows/Linux
 import fs from 'node:fs';
-import path from 'node:path';
 import https from 'node:https';
-import { fileURLToPath } from 'node:url';
 import { getActiveAccount } from './accounts.js';
+import { resolveFromRoot } from '../src/util/runtime_paths.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const ROOT_DIR = path.resolve(__dirname, '..');
-const SESSIONS_FILE = path.join(ROOT_DIR, '.deepblack_sessions.json');
-const SINGLE_SESSION_FILE = path.join(ROOT_DIR, '.deepblack_session.json');
+const SESSIONS_FILE = resolveFromRoot(import.meta.url, '.deepblack_sessions.json');
+const SINGLE_SESSION_FILE = resolveFromRoot(import.meta.url, '.deepblack_session.json');
 
 export function formatRelativeTime(dateStr) {
   if (!dateStr) return '-';

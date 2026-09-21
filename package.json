@@ -22,7 +22,8 @@
     "test:edit-oldstring-recovery": "node tests/test_edit_oldstring_recovery.js",
     "test:usage-estimate": "node tests/test_usage_estimate.js",
     "test:balanced-json": "node tests/test_balanced_json_trailing_garbage.js",
-    "test:cross-tool-bleed": "node tests/test_cross_tool_arg_bleed.js"
+    "test:cross-tool-bleed": "node tests/test_cross_tool_arg_bleed.js",
+    "test:boot-without-token": "node tests/test_boot_without_token.js"
   },
   "keywords": [
     "deepseek",

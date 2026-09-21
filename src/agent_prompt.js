@@ -2,17 +2,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import crypto from 'node:crypto';
-import { fileURLToPath } from 'node:url';
 import { resolveImagePart } from './vision.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { resolveFromRoot } from './util/runtime_paths.js';
 
 /**
  * Loads the base system prompt from prompts/system_prompt.md if available
  */
 export function loadBaseSystemPrompt() {
-  const promptPath = path.resolve(__dirname, '../prompts/system_prompt.md');
+  const promptPath = resolveFromRoot(import.meta.url, 'prompts', 'system_prompt.md');
   if (fs.existsSync(promptPath)) {
     try {
       return fs.readFileSync(promptPath, 'utf8').trim();

@@ -1,18 +1,14 @@
 import https from 'node:https';
 import http from 'node:http';
 import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { solveChallenge } from './pow.js';
 import { markAccountStatusByToken } from '../cli/accounts.js';
 import { formatMessagesToPrompt } from './agent_prompt.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { resolveFromRoot } from './util/runtime_paths.js';
 
 // Simple .env parser if dotenv is not installed
 function loadEnv() {
-  const envPath = path.resolve(__dirname, '../.env');
+  const envPath = resolveFromRoot(import.meta.url, '.env');
   if (fs.existsSync(envPath)) {
     const content = fs.readFileSync(envPath, 'utf8');
     const parsedKeys = new Set();
@@ -45,7 +41,7 @@ export class DeepSeekWebClient {
     this.useProxy = (config.useProxy ?? process.env.USE_GHOSTWIRE_PROXY) === 'true';
     this.proxyUrl = config.proxyUrl || process.env.GHOSTWIRE_PROXY_URL || 'http://127.0.0.1:8081';
 
-    this.sessionFilePath = config.sessionFilePath || path.resolve(__dirname, '../.deepblack_sessions.json');
+    this.sessionFilePath = config.sessionFilePath || resolveFromRoot(import.meta.url, '.deepblack_sessions.json');
     this.sessions = {}; // externalId -> { deepseekSessionId, lastResponseMessageId, title, needsTitleUpdate }
 
     // Configurable (not just hardcoded to the real .deepblack_accounts.json)
@@ -61,14 +57,19 @@ export class DeepSeekWebClient {
     // both models (deepseek-reasoner / deepseek-chat) on this client. Kept in
     // a separate file (not inside .deepblack_sessions.json) so it never
     // pollutes session-count metrics or gets clobbered by resetSession(null).
-    this.rateLimitFilePath = config.rateLimitFilePath || path.resolve(__dirname, '../.deepblack_ratelimit.json');
+    this.rateLimitFilePath = config.rateLimitFilePath || resolveFromRoot(import.meta.url, '.deepblack_ratelimit.json');
     this.rateLimitedUntil = 0; // epoch ms; 0 or past = not currently limited
     this.lastRateLimitReason = null;
     this._requestTimestamps = []; // sliding window for burst detection
 
-    if (!this.token) {
-      throw new Error('DEEPSEEK_AUTH_TOKEN is required.');
-    }
+    // No token yet is a valid state now (not a startup failure): a fresh
+    // install has zero accounts until the auto-capture userscript posts one
+    // to /api/account/sync, which calls updateCredentials() on this same
+    // instance. Throwing here used to kill the whole server before it could
+    // even bind the port to *receive* that sync -- see the distributable
+    // deepblack.exe flow. The check now lives in _request(), the actual
+    // network chokepoint, so any request made before an account is synced
+    // fails with a clear message instead of the process refusing to start.
 
     this.loadSessions();
     this._loadRateLimit();
@@ -224,6 +225,9 @@ export class DeepSeekWebClient {
   }
 
   async _request(urlStr, options = {}) {
+    if (!this.token) {
+      throw new Error('No DeepSeek account configured yet. Log into chat.deepseek.com and sync an account (POST /api/account/sync) before sending a request.');
+    }
     const url = new URL(urlStr);
     const method = options.method || 'GET';
     const headers = this._getHeaders(options.headers || {});

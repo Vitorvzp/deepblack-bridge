@@ -3,13 +3,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import https from 'node:https';
 import http from 'node:http';
-import { fileURLToPath } from 'node:url';
+import { resolveFromRoot } from '../src/util/runtime_paths.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const ROOT_DIR = path.resolve(__dirname, '..');
-const ENV_PATH = path.join(ROOT_DIR, '.env');
-const ACCOUNTS_FILE = path.join(ROOT_DIR, '.deepblack_accounts.json');
+const ENV_PATH = resolveFromRoot(import.meta.url, '.env');
+const ACCOUNTS_FILE = resolveFromRoot(import.meta.url, '.deepblack_accounts.json');
 
 /**
  * Parses .env file into key-value map and raw lines

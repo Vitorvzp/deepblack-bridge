@@ -1,9 +1,5 @@
 import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { resolveFromRoot } from './util/runtime_paths.js';
 
 let wasmInstance = null;
 let wasmExports = null;
@@ -12,8 +8,8 @@ const textEncoder = new TextEncoder();
 
 export async function initWasm(customPath) {
   if (wasmExports) return wasmExports;
-  
-  const wasmPath = customPath || path.resolve(__dirname, '../wasm/sha3_wasm.wasm');
+
+  const wasmPath = customPath || resolveFromRoot(import.meta.url, 'wasm', 'sha3_wasm.wasm');
   const wasmBytes = fs.readFileSync(wasmPath);
   const compiled = await WebAssembly.instantiate(wasmBytes, {});
   
