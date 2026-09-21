@@ -61,6 +61,6 @@
       alert(`⚠️ Erro ao sincronizar: ${data.message || 'Falha na ponte'}`);
     }
   } catch (err) {
-    alert(`❌ Erro ao conectar na bridge DeepBlack (:5050):\n${err.message}\nVerifique se 'node src/server.js' está rodando.`);
+    alert(`❌ Erro ao conectar na bridge DeepBlack (:5050):\n${err.message}\nVerifique se o DeepBlack Suite está rodando (deepblack.exe ou "Start DeepBlack Suite.bat").`);
   }
 })();

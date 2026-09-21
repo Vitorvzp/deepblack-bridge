@@ -90,19 +90,26 @@ $leiame = @"
 DeepBlack Suite -- passo a passo
 =================================
 
-1. Instale a extensao Tampermonkey no seu navegador:
-   https://www.tampermonkey.net/
+Como sincronizar sua conta DeepSeek (escolha UMA das duas opcoes):
 
-2. Abra o Tampermonkey, crie um novo script e cole o conteudo de:
-   $InstallDir\deepblack_autocapture.user.js
+OPCAO A -- bookmarklet (mais simples, sem instalar nada no navegador)
+  1. Abra $InstallDir\bookmarklet.html no navegador.
+  2. Arraste o botao verde ate a barra de favoritos.
+  3. Faca login normalmente em https://chat.deepseek.com
+  4. Clique no favorito sempre que quiser (re)sincronizar a conta.
 
-3. Abra https://chat.deepseek.com e faca login normalmente (com sua
-   propria conta). A captura da sessao acontece sozinha depois disso --
-   um aviso discreto aparece no canto da tela quando sincronizar.
+OPCAO B -- userscript (sincroniza sozinho a cada login, precisa do Tampermonkey)
+  1. Instale a extensao Tampermonkey: https://www.tampermonkey.net/
+  2. Abra o Tampermonkey, crie um novo script e cole o conteudo de:
+     $InstallDir\deepblack_autocapture.user.js
+  3. Faca login normalmente em https://chat.deepseek.com -- a partir dai
+     a sincronizacao acontece sozinha, sem precisar clicar em nada.
 
-4. Use o atalho "Start DeepBlack Suite.bat" (nesta pasta) pra iniciar a
-   bridge e o DeepCode juntos, ou rode `deepcode` de qualquer terminal
-   (o instalador ja adicionou essa pasta ao PATH).
+Depois de sincronizar pelo menos uma vez:
+
+- Use o atalho "Start DeepBlack Suite.bat" (nesta pasta) pra iniciar a
+  bridge e o DeepCode juntos, ou rode `deepcode` de qualquer terminal
+  (o instalador ja adicionou essa pasta ao PATH).
 
 Nada de credenciais veio junto com essa instalacao -- cada conta e a sua,
 capturada localmente quando voce loga.
@@ -110,8 +117,11 @@ capturada localmente quando voce loga.
 Set-Content -Path (Join-Path $InstallDir "LEIA-ME.txt") -Value $leiame -Encoding utf8
 
 Write-Host "`n=== Instalacao concluida ===" -ForegroundColor Green
-Write-Host "1. Instale a extensao Tampermonkey no navegador."
-Write-Host "2. Adicione o userscript: $InstallDir\deepblack_autocapture.user.js"
-Write-Host "3. Faca login normalmente em https://chat.deepseek.com"
-Write-Host "4. Use o atalho '$InstallDir\Start DeepBlack Suite.bat' pra iniciar tudo."
-Write-Host "`n(Abra um terminal novo pra o PATH atualizado ter efeito.)"
+Write-Host "Pra sincronizar sua conta DeepSeek, o jeito mais simples e:"
+Write-Host "  1. Abrir $InstallDir\bookmarklet.html no navegador"
+Write-Host "  2. Arrastar o botao pra barra de favoritos"
+Write-Host "  3. Logar em https://chat.deepseek.com e clicar no favorito"
+Write-Host "`n(Detalhes completos, incluindo a alternativa com Tampermonkey, em:"
+Write-Host "  $InstallDir\LEIA-ME.txt)"
+Write-Host "`nDepois, use '$InstallDir\Start DeepBlack Suite.bat' pra iniciar tudo."
+Write-Host "(Abra um terminal novo pra o PATH atualizado ter efeito.)"

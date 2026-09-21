@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>DeepBlack Suite — Sincronizar Conta</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: #0d1117; color: #c9d1d9; max-width: 640px; margin: 60px auto; padding: 0 20px; line-height: 1.6; }
+  h1 { color: #f0f6fc; font-size: 22px; }
+  .steps { counter-reset: step; }
+  .steps li { list-style: none; margin: 18px 0; padding-left: 36px; position: relative; }
+  .steps li::before { counter-increment: step; content: counter(step); position: absolute; left: 0; top: 0; width: 24px; height: 24px; background: #238636; color: #fff; border-radius: 50%; text-align: center; font-weight: 700; font-size: 13px; line-height: 24px; }
+  .bookmarklet-btn { display: inline-block; background: #238636; color: #fff !important; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: grab; border: 1px solid #2ea043; }
+  .bookmarklet-btn:hover { background: #2ea043; }
+  code { background: #161b22; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+  .note { background: #161b22; border-left: 3px solid #e3b341; padding: 10px 14px; margin-top: 24px; font-size: 14px; }
+</style>
+</head>
+<body>
+  <h1>🔗 Sincronizar sua conta DeepSeek com o DeepBlack</h1>
+  <p>Sem precisar instalar nenhuma extensão no navegador.</p>
+  <ol class="steps">
+    <li>Garanta que a barra de favoritos está visível (<code>Ctrl+Shift+B</code> na maioria dos navegadores).</li>
+    <li><strong>Arraste</strong> o botão abaixo até a barra de favoritos:<br><br>
+      <a class="bookmarklet-btn" href="javascript:(async%20function%20deepBlackSync()%20%7B%20try%20%7B%20let%20token%20%3D%20''%3B%20let%20deviceId%20%3D%20'4c1dd084-b214-4167-84cf-a98f3b998697'%3B%20try%20%7B%20const%20rawUserToken%20%3D%20localStorage.getItem('userToken')%3B%20if%20(rawUserToken)%20%7B%20const%20parsed%20%3D%20JSON.parse(rawUserToken)%3B%20if%20(parsed%3F.value)%20token%20%3D%20parsed.value%3B%20%7D%20%7D%20catch%20%7B%7D%20try%20%7B%20for%20(let%20i%20%3D%200%3B%20i%20%3C%20localStorage.length%3B%20i%2B%2B)%20%7B%20const%20k%20%3D%20localStorage.key(i)%3B%20if%20(k%20%26%26%20k.toLowerCase().includes('device'))%20%7B%20const%20val%20%3D%20localStorage.getItem(k)%3B%20if%20(val%20%26%26%20val.length%20%3E%2010)%20deviceId%20%3D%20val%3B%20%7D%20%7D%20%7D%20catch%20%7B%7D%20if%20(!token)%20%7B%20const%20userRes%20%3D%20await%20fetch('https%3A%2F%2Fchat.deepseek.com%2Fapi%2Fv0%2Fusers%2Fcurrent')%3B%20const%20raw%20%3D%20localStorage.getItem('userToken')%3B%20if%20(raw)%20token%20%3D%20JSON.parse(raw)%3F.value%20%7C%7C%20''%3B%20%7D%20if%20(!token)%20%7B%20alert('%E2%9A%A0%EF%B8%8F%20Token%20n%C3%A3o%20encontrado%20automaticamente%20no%20localStorage.%20Fa%C3%A7a%20login%20ou%20envie%20uma%20mensagem%20primeiro.')%3B%20return%3B%20%7D%20const%20payload%20%3D%20%7B%20token%2C%20cookie%3A%20document.cookie%20%7C%7C%20''%2C%20userAgent%3A%20navigator.userAgent%2C%20deviceId%2C%20makeActive%3A%20true%20%7D%3B%20const%20res%20%3D%20await%20fetch('http%3A%2F%2F127.0.0.1%3A5050%2Fapi%2Faccount%2Fsync'%2C%20%7B%20method%3A%20'POST'%2C%20headers%3A%20%7B%20'Content-Type'%3A%20'application%2Fjson'%20%7D%2C%20body%3A%20JSON.stringify(payload)%20%7D)%3B%20const%20data%20%3D%20await%20res.json()%3B%20if%20(res.ok%20%26%26%20data.status%20%3D%3D%3D%20'ok')%20%7B%20alert(%60%F0%9F%9F%A2%20DeepBlack%20Sincronizado!%5CnConta%3A%20%24%7Bdata.account.name%7D%20(%24%7Bdata.account.id%7D)%5CnToken%3A%20%24%7Btoken.slice(0%2C%208)%7D...%24%7Btoken.slice(-4)%7D%5CnStatus%3A%20Ativa%20no%20Bridge%20(%3A5050)%60)%3B%20%7D%20else%20%7B%20alert(%60%E2%9A%A0%EF%B8%8F%20Erro%20ao%20sincronizar%3A%20%24%7Bdata.message%20%7C%7C%20'Falha%20na%20ponte'%7D%60)%3B%20%7D%20%7D%20catch%20(err)%20%7B%20alert(%60%E2%9D%8C%20Erro%20ao%20conectar%20na%20bridge%20DeepBlack%20(%3A5050)%3A%5Cn%24%7Berr.message%7D%5CnVerifique%20se%20o%20DeepBlack%20Suite%20est%C3%A1%20rodando%20(deepblack.exe%20ou%20%22Start%20DeepBlack%20Suite.bat%22).%60)%3B%20%7D%20%7D)()%3B" onclick="alert('Nao clique aqui -- ARRASTE este botao ate a barra de favoritos do navegador.'); return false;">🔗 Sincronizar DeepBlack</a>
+    </li>
+    <li>Abra <a href="https://chat.deepseek.com" style="color:#58a6ff">chat.deepseek.com</a> e faça login normalmente com sua conta.</li>
+    <li>Clique no favorito "🔗 Sincronizar DeepBlack" que você acabou de criar.</li>
+  </ol>
+  <p>Um aviso vai confirmar que sua conta foi sincronizada com o DeepBlack Suite rodando na sua máquina (porta 5050).</p>
+  <div class="note">
+    Precisa repetir o clique de vez em quando (quando o token expirar). Se preferir sincronização automática a cada login, use o userscript <code>deepblack_autocapture.user.js</code> com a extensão Tampermonkey em vez deste bookmarklet.
+  </div>
+</body>
+</html>
