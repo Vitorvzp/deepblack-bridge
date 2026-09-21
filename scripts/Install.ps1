@@ -90,20 +90,28 @@ $leiame = @"
 DeepBlack Suite -- passo a passo
 =================================
 
-Como sincronizar sua conta DeepSeek (escolha UMA das duas opcoes):
+Sincronizacao automatica da conta DeepSeek (zero cliques depois de
+configurado -- roda sozinho a cada login, para sempre):
 
-OPCAO A -- bookmarklet (mais simples, sem instalar nada no navegador)
-  1. Abra $InstallDir\bookmarklet.html no navegador.
-  2. Arraste o botao verde ate a barra de favoritos.
-  3. Faca login normalmente em https://chat.deepseek.com
-  4. Clique no favorito sempre que quiser (re)sincronizar a conta.
+  1. Instale a extensao Tampermonkey (se ainda nao tiver):
+     https://www.tampermonkey.net/
+     (o instalador ja abriu essa pagina pra voce -- so clicar em
+     "Adicionar ao Chrome/Edge")
 
-OPCAO B -- userscript (sincroniza sozinho a cada login, precisa do Tampermonkey)
-  1. Instale a extensao Tampermonkey: https://www.tampermonkey.net/
-  2. Abra o Tampermonkey, crie um novo script e cole o conteudo de:
-     $InstallDir\deepblack_autocapture.user.js
-  3. Faca login normalmente em https://chat.deepseek.com -- a partir dai
-     a sincronizacao acontece sozinha, sem precisar clicar em nada.
+  2. O instalador tambem abriu o arquivo do script diretamente no
+     navegador. Com o Tampermonkey ativo, ele detecta sozinho que e um
+     userscript e mostra um botao "Install" -- clique nele. (Se a aba nao
+     abriu ou fechou sem querer, arraste este arquivo pra dentro de uma
+     janela do navegador:
+     $InstallDir\deepblack_autocapture.user.js)
+
+  3. Faca login normalmente em https://chat.deepseek.com (o instalador
+     ja abriu essa aba tambem). A partir dai, toda vez que voce logar
+     nesse site, sua conta sincroniza sozinha com o DeepBlack -- sem
+     precisar clicar em mais nada.
+
+Alternativa sem instalar extensao nenhuma (mas exige 1 clique manual
+sempre que quiser sincronizar): $InstallDir\bookmarklet.html
 
 Depois de sincronizar pelo menos uma vez:
 
@@ -117,11 +125,44 @@ capturada localmente quando voce loga.
 Set-Content -Path (Join-Path $InstallDir "LEIA-ME.txt") -Value $leiame -Encoding utf8
 
 Write-Host "`n=== Instalacao concluida ===" -ForegroundColor Green
-Write-Host "Pra sincronizar sua conta DeepSeek, o jeito mais simples e:"
-Write-Host "  1. Abrir $InstallDir\bookmarklet.html no navegador"
-Write-Host "  2. Arrastar o botao pra barra de favoritos"
-Write-Host "  3. Logar em https://chat.deepseek.com e clicar no favorito"
-Write-Host "`n(Detalhes completos, incluindo a alternativa com Tampermonkey, em:"
-Write-Host "  $InstallDir\LEIA-ME.txt)"
+Write-Host "Abrindo as 3 abas que voce precisa pra terminar a configuracao"
+Write-Host "(instalar Tampermonkey, instalar o script, logar no DeepSeek)...`n"
+
+# Start-Process num caminho de arquivo local usa a associacao de tipo de
+# arquivo do Windows pra decidir o que abrir -- .js esta associado ao
+# Windows Script Host (wscript.exe) por padrao, NAO ao navegador. Resolver
+# e chamar o executavel do navegador padrao diretamente evita isso (testado
+# e confirmado: abre corretamente como aba do navegador).
+function Get-DefaultBrowserExe {
+    try {
+        $progId = (Get-ItemProperty "HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\https\UserChoice" -ErrorAction Stop).ProgId
+        $cmdLine = (Get-ItemProperty "Registry::HKEY_CLASSES_ROOT\$progId\shell\open\command" -ErrorAction Stop).'(default)'
+        if ($cmdLine -match '"([^"]+)"') { return $matches[1] }
+        return ($cmdLine -split ' ')[0]
+    } catch {
+        return $null
+    }
+}
+
+$browserExe = Get-DefaultBrowserExe
+$userScriptPath = Join-Path $InstallDir "deepblack_autocapture.user.js"
+
+if ($browserExe -and (Test-Path $browserExe)) {
+    Start-Process -FilePath $browserExe -ArgumentList "https://www.tampermonkey.net/"
+    Start-Sleep -Milliseconds 500
+    Start-Process -FilePath $browserExe -ArgumentList $userScriptPath
+    Start-Sleep -Milliseconds 500
+    Start-Process -FilePath $browserExe -ArgumentList "https://chat.deepseek.com"
+} else {
+    Write-Host "(Nao consegui detectar o navegador padrao automaticamente -- abra manualmente:)" -ForegroundColor Yellow
+    Write-Host "  https://www.tampermonkey.net/"
+    Write-Host "  $userScriptPath"
+    Write-Host "  https://chat.deepseek.com"
+}
+
+Write-Host "1. Na primeira aba: instale a extensao Tampermonkey (se ainda nao tiver)."
+Write-Host "2. Na segunda aba: clique em 'Install' no prompt do Tampermonkey."
+Write-Host "3. Na terceira aba: faca login normalmente -- a sincronizacao e automatica dai em diante."
+Write-Host "`n(Passo a passo completo salvo em: $InstallDir\LEIA-ME.txt)"
 Write-Host "`nDepois, use '$InstallDir\Start DeepBlack Suite.bat' pra iniciar tudo."
 Write-Host "(Abra um terminal novo pra o PATH atualizado ter efeito.)"
