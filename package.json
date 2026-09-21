@@ -1,0 +1,40 @@
+{
+  "name": "deepblack",
+  "version": "1.0.0",
+  "description": "DeepSeek to OpenAI/DeepCode Protocol Gateway & Agent Bridge",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "login": "node cli/login.js",
+    "resume": "node cli/resume.js",
+    "chat:deephat": "node cli/chat_deephat.js",
+    "deephat": "node cli/chat_deephat.js",
+    "test:pow": "node tests/test_pow.js",
+    "test:stream": "node tests/test_deepseek_stream.js",
+    "test:api": "node tests/test_openai_api.js",
+    "test:ratelimit": "node tests/test_rate_limit_backoff.js",
+    "test:thinking-search": "node tests/test_thinking_search_resolution.js",
+    "test:queue-backpressure": "node tests/test_completion_queue_backpressure.js",
+    "test:account-invalid": "node tests/test_mark_account_invalid.js",
+    "test:fresh-session-prompt": "node tests/test_fresh_session_prompt_rebuild.js",
+    "test:context-reminder": "node tests/test_context_reminder.js",
+    "test:edit-oldstring-recovery": "node tests/test_edit_oldstring_recovery.js",
+    "test:usage-estimate": "node tests/test_usage_estimate.js",
+    "test:balanced-json": "node tests/test_balanced_json_trailing_garbage.js",
+    "test:cross-tool-bleed": "node tests/test_cross_tool_arg_bleed.js"
+  },
+  "keywords": [
+    "deepseek",
+    "deepcode",
+    "opencode",
+    "agent",
+    "gateway",
+    "openai-compatible"
+  ],
+  "author": "dj",
+  "license": "MIT",
+  "dependencies": {
+    "playwright": "^1.63.0"
+  }
+}

@@ -1,0 +1,12 @@
+.env
+node_modules/
+.pm2/
+.deepblack_session.json
+.deepblack_sessions.json
+.deepblack_ratelimit.json
+.deepblack_accounts.json
+scratch/
+dist/
+*.log
+ghostwire_deepseek_requests.csv
+.claude/
