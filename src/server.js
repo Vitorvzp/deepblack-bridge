@@ -1076,13 +1076,121 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // GET or POST /v1/session/history
+  if (url.pathname === '/v1/session/history' && (req.method === 'GET' || req.method === 'POST')) {
+    try {
+      let dsId = url.searchParams.get('chat_session_id') || url.searchParams.get('sessionId') || url.searchParams.get('url');
+      if (req.method === 'POST') {
+        const body = await parseJsonBody(req);
+        dsId = body.deepseekSessionId || body.sessionId || body.chat_session_id || body.url || dsId;
+      }
+      if (dsId) {
+        const raw = String(dsId).trim();
+        const uuidMatch = raw.match(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i);
+        const slashMatch = raw.match(/\/s\/([^/?#\s]+)/i) || raw.match(/\/chat\/([^/?#\s]+)/i);
+        dsId = uuidMatch ? uuidMatch[0] : (slashMatch ? slashMatch[1] : raw);
+      }
+      if (!dsId) {
+        sendJson(res, 400, { status: 'error', message: 'Missing chat_session_id or url' });
+        return;
+      }
+
+      const rawRes = await client._request(`https://chat.deepseek.com/api/v0/chat/history_messages?chat_session_id=${dsId}`, {
+        method: 'GET'
+      });
+
+      const bizData = rawRes?.data?.biz_data;
+      if (!bizData) {
+        sendJson(res, 404, { status: 'error', message: rawRes?.msg || 'Conversation not found or empty response from DeepSeek' });
+        return;
+      }
+
+      const chatSession = bizData.chat_session || {};
+      const rawMessages = bizData.chat_messages || [];
+
+      // Reconstruct the active branch from current_message_id back to root
+      const msgMap = new Map();
+      for (const m of rawMessages) {
+        msgMap.set(m.message_id, m);
+      }
+
+      let activeChain = [];
+      const currentMsgId = chatSession.current_message_id;
+      if (currentMsgId !== undefined && currentMsgId !== null && msgMap.has(currentMsgId)) {
+        let curr = msgMap.get(currentMsgId);
+        while (curr) {
+          activeChain.unshift(curr);
+          curr = (curr.parent_id !== null && curr.parent_id !== undefined) ? msgMap.get(curr.parent_id) : null;
+        }
+      } else {
+        // Fallback: sort by inserted_at or message_id
+        activeChain = [...rawMessages].sort((a, b) => (a.inserted_at || 0) - (b.inserted_at || 0) || (a.message_id || 0) - (b.message_id || 0));
+      }
+
+      const mappedMessages = activeChain.map((m) => {
+        const role = (m.role || 'user').toLowerCase();
+        const fragments = m.fragments || [];
+        let text = '';
+        let reasoning = '';
+
+        if (role === 'user') {
+          text = fragments
+            .filter((f) => f.type === 'TEXT')
+            .map((f) => f.content || '')
+            .join('');
+          if (!text && fragments.length > 0) {
+            text = fragments.map((f) => f.content || '').join('');
+          }
+        } else {
+          reasoning = fragments
+            .filter((f) => f.type === 'THINK')
+            .map((f) => f.content || '')
+            .join('');
+          text = fragments
+            .filter((f) => f.type === 'RESPONSE' || f.type === 'TEXT')
+            .map((f) => f.content || '')
+            .join('');
+        }
+
+        const timeMs = m.inserted_at ? Math.round(m.inserted_at * 1000) : Date.now();
+
+        return {
+          message_id: m.message_id,
+          parent_id: m.parent_id,
+          role,
+          text,
+          reasoning,
+          model: m.model || 'deepseek-chat',
+          time: timeMs
+        };
+      });
+
+      console.log(`[DeepBlack Bridge] Retrieved ${mappedMessages.length} messages for chat "${dsId}" ("${chatSession.title || 'Untitled'}")`);
+      sendJson(res, 200, {
+        status: 'ok',
+        chat_session: chatSession,
+        messages: mappedMessages,
+        total: mappedMessages.length
+      });
+    } catch (err) {
+      sendJson(res, 500, { status: 'error', message: err.message });
+    }
+    return;
+  }
+
   // POST /v1/session/link
   if (url.pathname === '/v1/session/link' && req.method === 'POST') {
     try {
       const body = await parseJsonBody(req);
-      const dsId = body.deepseekSessionId || body.sessionId;
+      let dsId = body.deepseekSessionId || body.sessionId;
+      if (!dsId && (body.url || body.chatUrl)) {
+        const raw = String(body.url || body.chatUrl).trim();
+        const uuidMatch = raw.match(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i);
+        const slashMatch = raw.match(/\/s\/([^/?#\s]+)/i) || raw.match(/\/chat\/([^/?#\s]+)/i);
+        dsId = uuidMatch ? uuidMatch[0] : (slashMatch ? slashMatch[1] : raw);
+      }
       if (!dsId) {
-        sendJson(res, 400, { status: 'error', message: 'Missing deepseekSessionId' });
+        sendJson(res, 400, { status: 'error', message: 'Missing deepseekSessionId or url' });
         return;
       }
       const extId = req.headers['x-session-id'] || body.externalSessionId || 'default';

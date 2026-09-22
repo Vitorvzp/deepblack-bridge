@@ -10,3 +10,4 @@ dist/
 *.log
 ghostwire_deepseek_requests.csv
 .claude/
+*.har
