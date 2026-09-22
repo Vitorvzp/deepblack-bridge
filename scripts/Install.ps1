@@ -9,7 +9,7 @@ $ErrorActionPreference = "Stop"
 
 $DeepBlackRepo = "Vitorvzp/deepblack-bridge"
 $DeepCodeRepo  = "Vitorvzp/deepcode-cli"
-$Tag           = "v0.1.0"
+$Tag           = "v0.2.0"
 $InstallDir    = Join-Path $env:LOCALAPPDATA "DeepBlackSuite"
 
 Write-Host "=== DeepBlack Suite Installer ===" -ForegroundColor Cyan
